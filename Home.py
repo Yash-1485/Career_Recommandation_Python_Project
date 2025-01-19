@@ -5,6 +5,8 @@ import streamlit as st
 from streamlit_tags import st_tags
 from Courses import ds_course, web_course, android_course, ios_course, uiux_course, resume_videos, interview_videos
 import io, random
+import base64
+from fpdf import FPDF
 
 def course_recommender(course_list):
     st.subheader("**Courses & Certificates🎓 Recommendations**")
@@ -19,6 +21,73 @@ def course_recommender(course_list):
         if c == no_of_reco:
             break
     return rec_course
+
+# def show_pdf(file_path):
+#     with open(file_path, "rb") as f:
+#         base64_pdf = base64.b64encode(f.read()).decode('utf-8')
+#     # pdf_display = f'<embed src="data:application/pdf;base64,{base64_pdf}" width="700" height="1000" type="application/pdf">'
+#     pdf_display = F'<iframe src="data:application/pdf;base64,{base64_pdf}" width="700" height="1000" type="application/pdf"></iframe>'
+#     st.markdown(pdf_display, unsafe_allow_html=True)
+
+def show_pdf(file_path):
+    """Embed a PDF file in Streamlit."""
+    with open(file_path, "rb") as f:
+        base64_pdf = base64.b64encode(f.read()).decode('utf-8')
+    pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="700" height="1000"></iframe>'
+    st.markdown(pdf_display, unsafe_allow_html=True)
+    
+def create_download_link(val, filename):
+    b64 = base64.b64encode(val)  # val looks like b'...'
+    return f'<a href="data:application/octet-stream;base64,{b64.decode()}" download="{filename}.pdf">Download file</a>'
+
+# Function to create the resume PDF
+def create_resume(user:User):
+    pdf = FPDF()
+    pdf.add_page()
+    
+    # Set title
+    pdf.set_font('Arial', 'B', 16)
+    pdf.set_text_color(0, 51, 102)  # Dark blue
+    pdf.cell(0, 10, "Resume", ln=True, align='C')
+    pdf.ln(10)
+
+    # Basic Details
+    pdf.set_font('Arial', 'B', 14)
+    pdf.set_text_color(0, 0, 0)
+    pdf.cell(0, 10, "Basic Details:", ln=True)
+    pdf.set_font('Arial', '', 12)
+    pdf.ln(5)
+    pdf.cell(0, 10, f"First Name: {user.fname}", ln=True)
+    pdf.cell(0, 10, f"Middle Name: {user.mname}", ln=True)
+    pdf.cell(0, 10, f"Last Name: {user.lname}", ln=True)
+    pdf.cell(0, 10, f"Age: {user.age}", ln=True)
+    pdf.cell(0, 10, f"Gender: {user.gender}", ln=True)
+    pdf.ln(10)
+
+    # Education
+    pdf.set_font('Arial', 'B', 14)
+    pdf.cell(0, 10, "Education:", ln=True)
+    pdf.set_font('Arial', '', 12)
+    pdf.ln(5)
+    pdf.cell(0, 10, f"Branch: {user.branch}", ln=True)
+    pdf.cell(0, 10, f"Highest Education: {user.education}", ln=True)
+    pdf.ln(10)
+
+    # Career
+    pdf.set_font('Arial', 'B', 14)
+    pdf.cell(0, 10, "Career:", ln=True)
+    pdf.set_font('Arial', '', 12)
+    pdf.ln(5)
+    pdf.multi_cell(0, 10, f"Skills: {user.skills}")
+    pdf.multi_cell(0, 10, f"Hobbies: {user.hobbies}")
+    pdf.multi_cell(0, 10, f"Interest: {user.interests}")
+    pdf.ln(10)
+
+    # Save PDF
+    # save_path = user.fname+".pdf"
+    save_path = user.fname
+    pdf.output(save_path)
+    return pdf,save_path
 
 def run():
     try:
@@ -160,9 +229,35 @@ def run():
                         unsafe_allow_html=True)
                     rec_course = course_recommender(uiux_course)
                     break
-            print(rec_course)
+            # print(rec_course)
             # st.write(rec_course)
 
+            try:                
+                export_as_pdf = st.button("Export Report")                
 
+                if export_as_pdf:
+                    pdf,path=create_resume(user)
+                    # Creating download link
+                    pdf_data = pdf.output(dest="S").encode("latin-1")
+                    html = create_download_link(pdf_data,path)
+                    st.markdown(html, unsafe_allow_html=True)
+                
+                # pdf_file=f"{user.fname}.pdf"
+                # see_file=st.button("Preview of Resume")
+                # Predefined path to the PDF file
+                pdf_path = f"D:/Career_Recommandation_Python_Project/Career_Recommandation_Python_Project/Resume/{user.fname}.pdf"  # Replace with your actual PDF path
+                # Initialize the session state for toggling
+                if "show_pdf" not in st.session_state:
+                    st.session_state.show_pdf = False
+
+                # Button to toggle PDF visibility
+                if st.button("Preview/Hide Resume"):
+                    st.session_state.show_pdf = not st.session_state.show_pdf
+
+                # Display or hide the PDF based on the session state
+                if st.session_state.show_pdf:
+                    show_pdf(pdf_path)                    
+            except Exception as e:
+                print(e)
     except Exception as e:
         print(e)
