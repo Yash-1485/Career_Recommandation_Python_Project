@@ -1,7 +1,7 @@
 import streamlit as st
 import mysql.connector as conn
 import DB_Creadentials as crd
-import User as user
+from User import User
 
 count=0
 def run():
@@ -30,6 +30,7 @@ def run():
         if(flag):
             st.session_state["logged_in"] = True
             st.success("LoggedIn Successfully")
+            st.session_state["User"] = fetch_user(email,pwd)
         else:
             global count
             count+=1
@@ -41,3 +42,13 @@ def run():
             
             # st.warning("Invalid email or password! Please Enter correct email or password")
         # print(data)
+
+def fetch_user(email,pwd):
+    db=conn.connect(host=crd.host,user=crd.user,password=crd.pwd,database=crd.db_name)
+    cursor=db.cursor()
+    query="SELECT * FROM USER WHERE EMAIL=%s AND PWD=%s"
+    cursor.execute(query,(email,pwd))
+    data=cursor.fetchone()
+    user=User(data[1],data[2],data[3],data[4],data[5],data[6],data[7],data[8],data[9],data[10],data[11],data[12])
+    user.uid=data[0]
+    return user
