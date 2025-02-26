@@ -22,13 +22,6 @@ def course_recommender(course_list):
             break
     return rec_course
 
-# def show_pdf(file_path):
-#     with open(file_path, "rb") as f:
-#         base64_pdf = base64.b64encode(f.read()).decode('utf-8')
-#     # pdf_display = f'<embed src="data:application/pdf;base64,{base64_pdf}" width="700" height="1000" type="application/pdf">'
-#     pdf_display = F'<iframe src="data:application/pdf;base64,{base64_pdf}" width="700" height="1000" type="application/pdf"></iframe>'
-#     st.markdown(pdf_display, unsafe_allow_html=True)
-
 def show_pdf(file_path):
     """Embed a PDF file in Streamlit."""
     with open(file_path, "rb") as f:
@@ -48,7 +41,7 @@ def create_resume(user:User):
     # Set title
     pdf.set_font('Arial', 'B', 16)
     pdf.set_text_color(0, 51, 102)  # Dark blue
-    pdf.cell(0, 10, "Resume", ln=True, align='C')
+    pdf.cell(0, 10, "Report", ln=True, align='C')
     pdf.ln(10)
 
     # Basic Details
@@ -58,7 +51,6 @@ def create_resume(user:User):
     pdf.set_font('Arial', '', 12)
     pdf.ln(5)
     pdf.cell(0, 10, f"First Name: {user.fname}", ln=True)
-    pdf.cell(0, 10, f"Middle Name: {user.mname}", ln=True)
     pdf.cell(0, 10, f"Last Name: {user.lname}", ln=True)
     pdf.cell(0, 10, f"Age: {user.age}", ln=True)
     pdf.cell(0, 10, f"Gender: {user.gender}", ln=True)
@@ -69,7 +61,6 @@ def create_resume(user:User):
     pdf.cell(0, 10, "Education:", ln=True)
     pdf.set_font('Arial', '', 12)
     pdf.ln(5)
-    pdf.cell(0, 10, f"Branch: {user.branch}", ln=True)
     pdf.cell(0, 10, f"Highest Education: {user.education}", ln=True)
     pdf.ln(10)
 
@@ -78,9 +69,9 @@ def create_resume(user:User):
     pdf.cell(0, 10, "Career:", ln=True)
     pdf.set_font('Arial', '', 12)
     pdf.ln(5)
-    pdf.multi_cell(0, 10, f"Skills: {user.skills}")
-    pdf.multi_cell(0, 10, f"Hobbies: {user.hobbies}")
-    pdf.multi_cell(0, 10, f"Interest: {user.interests}")
+    pdf.multi_cell(0, 10, f"Skills: {', '.join(user.skills)}")
+    pdf.multi_cell(0, 10, f"Hobbies: {', '.join(user.hobbies)}")
+    pdf.multi_cell(0, 10, f"Interest: {', '.join(user.interests)}")
     pdf.ln(10)
 
     # Save PDF
@@ -101,29 +92,26 @@ def run():
             flag=True
         
         if(flag):
-            skills=eval(user.skills)
-            # print(skills)
-            name=user.fname+" "+user.mname+" "+user.lname
-            st.header("**Resume Analysis**")
+            skills=user.skills
+            name=user.fname+" "+user.lname
+            st.header("**Career Analysis**")
             st.success("Hello " + name)
             st.subheader("**Your Basic info**")
-            st.write('User Id: ' + str(user.uid))
             st.write('Name: ' + name)
             st.write('Email: ' + user.email)
             st.write('Age: ' + str(user.age))
             st.write('Gender: ' + user.gender)
-            st.write('Branch: ' + user.branch)
 
             st.subheader("**Skills Recommendation💡**")
-                ## Skill shows
-            keywords = st_tags(
-                label='### Skills that you have',
-                text='See our skills recommendation',
-                value=skills,  # Initial tags
-                # suggestions=["Data Science", "AI", "Deep Learning"],  # Suggestions
-                maxtags=10,  # Max number of tags
-            )
-            # st.write(keywords)
+            # keywords = st_tags(
+            #     label='### Skills that you have',
+            #     text='See our skills recommendation',
+            #     value=skills,  # Initial tags
+            #     maxtags=10,  # Max number of tags
+            # )
+            st.markdown(f'<h3>Skills that you have</h3>',unsafe_allow_html=True)
+            for skill in skills:
+                st.markdown(f'<h4>{skill}</h4>',unsafe_allow_html=True)
 
             ##  recommendation
             ds_keyword = ['tensorflow', 'keras', 'pytorch', 'machine learning', 'deep Learning', 'flask',
@@ -146,7 +134,6 @@ def run():
             for i in skills:
                 ## Data science recommendation
                 if i.lower() in ds_keyword:
-                    print(i.lower())
                     reco_field = 'Data Science'
                     st.success("** Our analysis says you are looking for Data Science Jobs.**")
                     recommended_skills = ['Data Visualization', 'Predictive Analysis', 'Statistical Modeling',
@@ -165,7 +152,6 @@ def run():
 
                 ## Web development recommendation
                 elif i.lower() in web_keyword:
-                    print(i.lower())
                     reco_field = 'Web Development'
                     st.success("** Our analysis says you are looking for Web Development Jobs **")
                     recommended_skills = ['React', 'Django', 'Node JS', 'React JS', 'php', 'laravel', 'Magento',
@@ -181,7 +167,6 @@ def run():
 
                 ## Android App Development
                 elif i.lower() in android_keyword:
-                    print(i.lower())
                     reco_field = 'Android Development'
                     st.success("** Our analysis says you are looking for Android App Development Jobs **")
                     recommended_skills = ['Android', 'Android development', 'Flutter', 'Kotlin', 'XML', 'Java',
@@ -197,7 +182,6 @@ def run():
 
                 ## IOS App Development
                 elif i.lower() in ios_keyword:
-                    print(i.lower())
                     reco_field = 'IOS Development'
                     st.success("** Our analysis says you are looking for IOS App Development Jobs **")
                     recommended_skills = ['IOS', 'IOS Development', 'Swift', 'Cocoa', 'Cocoa Touch', 'Xcode',
@@ -214,7 +198,6 @@ def run():
 
                 ## Ui-UX Recommendation
                 elif i.lower() in uiux_keyword:
-                    print(i.lower())
                     reco_field = 'UI-UX Development'
                     st.success("** Our analysis says you are looking for UI-UX Development Jobs **")
                     recommended_skills = ['UI', 'User Experience', 'Adobe XD', 'Figma', 'Zeplin', 'Balsamiq',
@@ -229,8 +212,6 @@ def run():
                         unsafe_allow_html=True)
                     rec_course = course_recommender(uiux_course)
                     break
-            # print(rec_course)
-            # st.write(rec_course)
 
             try:                
                 export_as_pdf = st.button("Export Report")                
@@ -242,16 +223,14 @@ def run():
                     html = create_download_link(pdf_data,path)
                     st.markdown(html, unsafe_allow_html=True)
                 
-                # pdf_file=f"{user.fname}.pdf"
-                # see_file=st.button("Preview of Resume")
                 # Predefined path to the PDF file
-                pdf_path = f"D:/Career_Recommandation_Python_Project/Career_Recommandation_Python_Project/Resume/{user.fname}.pdf"  # Replace with your actual PDF path
+                pdf_path = f"Report/{user.fname}.pdf"
                 # Initialize the session state for toggling
                 if "show_pdf" not in st.session_state:
                     st.session_state.show_pdf = False
 
                 # Button to toggle PDF visibility
-                if st.button("Preview/Hide Resume"):
+                if st.button("Preview/Hide Report"):
                     st.session_state.show_pdf = not st.session_state.show_pdf
 
                 # Display or hide the PDF based on the session state

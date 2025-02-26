@@ -1,4 +1,5 @@
 host="localhost"
 user="root"
 pwd="root"
-db_name="CR_APP"
+db_name="cr"
+port=3306

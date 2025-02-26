@@ -6,7 +6,7 @@ from streamlit_option_menu import option_menu as om
 import Home
 import Login
 import Signup
-
+import UserProfile
 st.set_page_config(
     page_title="Career Recommendation System",
     page_icon="🌟"
@@ -21,8 +21,8 @@ def run():
     with st.sidebar:
         page = om(
             menu_title="Navigation",
-            options=["Home", "Login", "Signup"],
-            icons=["house-fill", "person-fill", "pencil-square"],
+            options=["Home", "Login", "Signup","User Profile"],
+            icons=["house-fill", "box-arrow-in-right", "pencil-square","person-fill"],
             default_index=0,
             styles={
                 "container": {"padding": "5px", "background-color": "#f8f9fa"},
@@ -42,6 +42,11 @@ def run():
         Login.run()
     elif page == "Signup":
         Signup.run()
+    elif page=="User Profile":
+        if st.session_state["logged_in"]:
+            UserProfile.run()
+        else:
+            st.warning("You haven't logged in yet. Please log in first!")
 
 if __name__ == "__main__":
     crt_db.db_creation()

@@ -6,8 +6,9 @@ def db_creation():
         cur=db.cursor()
         create_db=f"CREATE DATABASE IF NOT EXISTS {crd.db_name}"
         cur.execute(create_db)
+        db.database=crd.db_name
         table_name="user"
-        create_table=f"CREATE TABLE IF NOT EXISTS USER(USER_ID INT PRIMARY KEY,EMAIL VARCHAR(100),PWD VARCHAR(20),FNAME VARCHAR(50),MNAME VARCHAR(50),LNAME VARCHAR(50),AGE INT,GENDER VARCHAR(20),BRANCH VARCHAR(1000),EDUCATION VARCHAR(1000),SKILLS VARCHAR(1000),HOBBIES VARCHAR(1000),INTERESTS VARCHAR(1000))"
+        create_table=f"CREATE TABLE If not Exists user (id INT AUTO_INCREMENT PRIMARY KEY,email VARCHAR(255) UNIQUE NOT NULL,password VARCHAR(255) NOT NULL,first_name VARCHAR(100) NOT NULL,last_name VARCHAR(100) NOT NULL,phone VARCHAR(15) NOT NULL,age INT NOT NULL,gender ENUM('Male', 'Female', 'Other') NOT NULL,skills TEXT NOT NULL,experience VARCHAR(10) NOT NULL,education VARCHAR(255) NOT NULL,career_interests TEXT NOT NULL,hobbies TEXT NOT NULL,interests TEXT NOT NULL,created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);"
         db.database=crd.db_name
         cur.execute(create_table)
         db.commit()
