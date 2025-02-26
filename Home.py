@@ -7,6 +7,7 @@ from Courses import ds_course, web_course, android_course, ios_course, uiux_cour
 import io, random
 import base64
 from fpdf import FPDF
+import JobSearch as JS
 
 def course_recommender(course_list):
     st.subheader("**Courses & Certificates🎓 Recommendations**")
@@ -88,7 +89,7 @@ def run():
         flag=False
         user=None
         if("User" in st.session_state):
-            user:User=st.session_state["User"]
+            user:User=st.session_state["User"]            
             flag=True
         
         if(flag):
@@ -236,6 +237,11 @@ def run():
                 # Display or hide the PDF based on the session state
                 if st.session_state.show_pdf:
                     show_pdf(pdf_path)                    
+            except Exception as e:
+                print(e)
+            
+            try:
+                JS.run(user.skills)
             except Exception as e:
                 print(e)
     except Exception as e:

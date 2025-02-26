@@ -100,38 +100,17 @@ class User:
         return f"User({self.fname} {self.lname}, {self.email}, {self.phone}, {self.age} years old, {self.gender}, \
         Education: {self.education}, Experience: {self.experience}, Skills: {', '.join(self.skills) if self.skills else 'N/A'}, \
         Career Interests: {', '.join(self.career_interests) if self.career_interests else 'N/A'}, \
-        Hobbies: {', '.join(self.hobbies) if self.hobbies else 'N/A'}, Interests: {', '.join(self.interests) if self.interests else 'N/A'})"
+        Hobbies: {', '.join(self.hobbies) if self.hobbies else 'N/A'}, Interests: {', '.join(self.interests) if self.interests else 'N/A'})"        
 
-        
+    def generate_uid(self):
+        db=conn.connect(host=crd.host,user=crd.user,password=crd.pwd,database=crd.db_name,port=crd.port)
+        cursor=db.cursor()
+        query = "SELECT id FROM USER WHERE email=%s and phone=%s"
+        cursor.execute(query,(self.get_email(),self.get_phone()))
 
-# def get_uid():
-#     db=conn.connect(host=crd.host,user=crd.user,password=crd.pwd,database=crd.db_name,port=crd.port)
-#     cursor=db.cursor()
-#     query = "SELECT * FROM USER ORDER BY USER_ID DESC LIMIT 1"
-#     cursor.execute(query)
-
-#     # Fetching the last enered result
-#     last_entry = cursor.fetchone()
-#     print(last_entry[0])
-#     return last_entry[0]+1
-
-
-if __name__=="__main__":
-    # Example:
-    user = User(
-        email="john@gmail.com",
-        pwd="John@1234",
-        fname="John",
-        lname="Doe",
-        age=25,
-        gender="Male",
-        phone="7201020019",
-        skills=["Python", "Java"],
-        experience="Fresher",
-        education="B.Tech",
-        hobbies=["Reading", "Cycling"],
-        interests=["AI", "Data Science"],
-        career_interests=["WebDeveloper"]
-    )
-
-    print(user)  # Output: John
+        # Fetching the last enered result
+        self.uid=cursor.fetchone()
+    
+    def get_uid(self):
+        self.generate_uid()
+        return self.uid

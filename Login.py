@@ -27,6 +27,7 @@ def run():
                 st.session_state["logged_in"] = True
                 st.success("Logged in Successfully!")
                 st.session_state["User"] = create_user_instance(user_data)
+                st.session_state.User.get_uid()
             else:
                 count += 1
                 st.error("Invalid email or password. Please try again.")
