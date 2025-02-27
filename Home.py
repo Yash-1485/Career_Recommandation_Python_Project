@@ -195,7 +195,6 @@ def run():
 
                 # Find relevant fields where the user has matching skills
                 for field, (keywords, skills_list) in job_fields.items():
-                    print(keywords)
                     if any(skill in keywords for skill in user_skills):  # User must have at least one matching skill
                         valid_fields[field] = skills_list
 
