@@ -61,7 +61,8 @@ def run():
     # User Profile Display
     st.markdown('<div class="profile-header">User Profile</div>', unsafe_allow_html=True)
     profile_fields = {
-        "Name": f"{user.fname} {user.lname}",
+        "First Name": f"{user.fname}",
+        "Last Name": f"{user.lname}",
         "Email": user.email,
         "Age": user.age,
         "Education": user.education,
@@ -79,7 +80,8 @@ def run():
     st.subheader("📝 Edit Your Profile")
     
     field_options = {
-        "Name": "fname",
+        "First Name": "fname",
+        "Last Name": "lname",
         "Email": "email",
         "Age": "age",
         "Education": "education",

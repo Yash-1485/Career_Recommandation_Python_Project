@@ -32,7 +32,7 @@ def run():
         f_name = st.text_input("First Name", placeholder="Enter your first name")
         l_name = st.text_input("Last Name", placeholder="Enter your last name")
         phone = st.text_input("Phone Number", placeholder="Enter your phone number")
-        age = st.number_input("Age", min_value=0, max_value=120, step=1)
+        age = st.number_input("Age", min_value=18, max_value=120, step=1)
         gen = st.selectbox("Gender", ["Male", "Female", "Other"])
         skills = st.text_area("Skills", placeholder="List your skills separated by commas")
         experience = st.selectbox("Years of Experience",["Fresher","1-3","3-5","5+"])

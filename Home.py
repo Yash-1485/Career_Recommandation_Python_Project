@@ -35,14 +35,14 @@ def create_download_link(val, filename):
     return f'<a href="data:application/octet-stream;base64,{b64.decode()}" download="{filename}.pdf">Download file</a>'
 
 # Function to create the resume PDF
-def create_report(user:User):
+def create_report(user: User):
     pdf = FPDF()
     pdf.add_page()
     
     # Set title
     pdf.set_font('Arial', 'B', 16)
     pdf.set_text_color(0, 51, 102)  # Dark blue
-    pdf.cell(0, 10, "Report", ln=True, align='C')
+    pdf.cell(0, 10, "Career Recommendation Report", ln=True, align='C')
     pdf.ln(10)
 
     # Basic Details
@@ -51,35 +51,63 @@ def create_report(user:User):
     pdf.cell(0, 10, "Basic Details:", ln=True)
     pdf.set_font('Arial', '', 12)
     pdf.ln(5)
-    pdf.cell(0, 10, f"First Name: {user.fname}", ln=True)
-    pdf.cell(0, 10, f"Last Name: {user.lname}", ln=True)
+    pdf.cell(0, 10, f"Name: {user.fname} {user.lname}", ln=True)
+    pdf.cell(0, 10, f"Email: {user.email}", ln=True)
     pdf.cell(0, 10, f"Age: {user.age}", ln=True)
     pdf.cell(0, 10, f"Gender: {user.gender}", ln=True)
     pdf.ln(10)
 
-    # Education
+    # Skills
     pdf.set_font('Arial', 'B', 14)
-    pdf.cell(0, 10, "Education:", ln=True)
+    pdf.cell(0, 10, "Skills:", ln=True)
     pdf.set_font('Arial', '', 12)
     pdf.ln(5)
-    pdf.cell(0, 10, f"Highest Education: {user.education}", ln=True)
+    pdf.multi_cell(0, 10, ", ".join(user.skills))
     pdf.ln(10)
 
-    # Career
+    # Job Recommendations
     pdf.set_font('Arial', 'B', 14)
-    pdf.cell(0, 10, "Career:", ln=True)
+    pdf.cell(0, 10, "Recommended Career Fields:", ln=True)
     pdf.set_font('Arial', '', 12)
     pdf.ln(5)
-    pdf.multi_cell(0, 10, f"Skills: {', '.join(user.skills)}")
-    pdf.multi_cell(0, 10, f"Hobbies: {', '.join(user.hobbies)}")
-    pdf.multi_cell(0, 10, f"Interest: {', '.join(user.interests)}")
+    for field in st.session_state.recommended_skills.keys():
+        pdf.cell(0, 10, f"- {field}", ln=True)
     pdf.ln(10)
 
+    # Recommended Skills
+    pdf.set_font('Arial', 'B', 14)
+    pdf.cell(0, 10, "Additional Skills to Learn:", ln=True)
+    pdf.set_font('Arial', '', 12)
+    pdf.ln(5)
+    for field, skills in st.session_state.recommended_skills.items():
+        pdf.cell(0, 10, f"{field}:", ln=True)
+        pdf.multi_cell(0, 10, ", ".join(skills))
+        pdf.ln(5)
+
+    # Recommended Courses
+    # pdf.set_font('Arial', 'B', 14)
+    # pdf.cell(0, 10, "Course Recommendations:", ln=True)
+    # pdf.set_font('Arial', '', 12)
+    # pdf.ln(5)
+    # course_mapping = {
+    #     "Data Science": ds_course,
+    #     "Web Development": web_course,
+    #     "Android Development": android_course,
+    #     "IOS Development": ios_course,
+    #     "UI-UX Development": uiux_course
+    # }
+    # for field, courses in course_mapping.items():
+    #     pdf.cell(0, 10, f"{field} Courses:", ln=True)
+    #     pdf.ln(5)
+    #     for c_name, c_link in courses[:4]:  # Displaying top 4 recommended courses
+    #         pdf.multi_cell(0, 10, f"- {c_name}: {c_link}")
+    #     pdf.ln(5)
+    
     # Save PDF
-    # save_path = user.fname+".pdf"
-    save_path = user.fname
+    save_path = f"{user.fname}"
     pdf.output(save_path)
-    return pdf,save_path
+    
+    return pdf, save_path
 
 def run():
     try:
@@ -91,7 +119,9 @@ def run():
         if("User" in st.session_state):
             user:User=st.session_state["User"]            
             flag=True
-        
+        if "recommended_skills" not in st.session_state:
+                st.session_state.recommended_skills = {}
+
         if(flag):
             SAVE_FOLDER = "Report"
             os.makedirs(SAVE_FOLDER, exist_ok=True)
@@ -195,7 +225,6 @@ def run():
 
                 # Find relevant fields where the user has matching skills
                 for field, (keywords, skills_list) in job_fields.items():
-                    print(keywords)
                     if any(skill in keywords for skill in user_skills):  # User must have at least one matching skill
                         valid_fields[field] = skills_list
 
