@@ -9,31 +9,41 @@ jobs = [
         {"titles": ["Backend Developer", "Software Engineer"], "industry": "Tech", "skills": "Django, Python, PostgreSQL", "location": "London, UK", "company_size": "500-1000", "salary": 85000},
         {"titles": ["iOS Developer", "Mobile Developer"], "industry": "Tech", "skills": "Swift, Xcode, Firebase", "location": "San Francisco, USA", "company_size": "1000-5000", "salary": 110000},
         {"titles": ["Android Developer", "Kotlin Developer"], "industry": "Tech", "skills": "Kotlin, Java, Firebase", "location": "Berlin, Germany", "company_size": "500-1000", "salary": 95000},
-        {"titles": ["Data Engineer", "Big Data Developer"], "industry": "Tech", "skills": "Hadoop, Spark, Python", "location": "Hyderabad, India", "company_size": "1000-5000", "salary": 1400000},
+        {"titles": ["Cybersecurity Analyst", "Security Engineer"], "industry": "Tech", "skills": "Network Security, SIEM, Firewalls", "location": "Boston, USA", "company_size": "1000-5000", "salary": 120000},
         {"titles": ["AI Engineer", "Deep Learning Engineer"], "industry": "Tech", "skills": "PyTorch, TensorFlow, NLP", "location": "Toronto, Canada", "company_size": "200-500", "salary": 100000},
-        {"titles": ["Data Scientist", "ML Researcher"], "industry": "Tech", "skills": "Python, Scikit-learn, Deep Learning", "location": "Singapore", "company_size": "500-1000", "salary": 90000},
+        {"titles": ["Blockchain Developer", "Smart Contract Engineer"], "industry": "Tech", "skills": "Solidity, Ethereum, Web3.js", "location": "Singapore", "company_size": "500-1000", "salary": 130000},
         {"titles": ["UX Designer", "UI/UX Researcher"], "industry": "Design", "skills": "Figma, Adobe XD, Prototyping", "location": "Sydney, Australia", "company_size": "200-500", "salary": 85000},
-        {"titles": ["UI Designer", "Product Designer"], "industry": "Design", "skills": "Sketch, Figma, Wireframing", "location": "Chennai, India", "company_size": "1000-5000", "salary": 700000},
-        {"titles": ["Web Designer", "Frontend Engineer"], "industry": "Tech", "skills": "CSS, JavaScript, Bootstrap", "location": "Los Angeles, USA", "company_size": "500-1000", "salary": 88000},
-        {"titles": ["Data Analyst", "BI Consultant"], "industry": "Finance", "skills": "Power BI, SQL, Tableau", "location": "Hong Kong", "company_size": "1000-5000", "salary": 95000},
-        {"titles": ["Full Stack Developer", "Web Engineer"], "industry": "Tech", "skills": "Vue.js, Laravel, MySQL", "location": "Kolkata, India", "company_size": "50-200", "salary": 850000},
-        {"titles": ["Flutter Developer", "Mobile App Engineer"], "industry": "Tech", "skills": "Dart, Flutter, Firebase", "location": "Dubai, UAE", "company_size": "500-1000", "salary": 92000},
-        {"titles": ["Backend Engineer", "API Developer"], "industry": "Tech", "skills": "Node.js, Express, MongoDB", "location": "Paris, France", "company_size": "500-1000", "salary": 87000},
+        {"titles": ["Network Engineer", "Systems Administrator"], "industry": "Tech", "skills": "Cisco, Linux, Cloud Networking", "location": "Dubai, UAE", "company_size": "1000-5000", "salary": 115000},
+        {"titles": ["Cloud Architect", "DevOps Engineer"], "industry": "Tech", "skills": "AWS, Kubernetes, Terraform", "location": "Seattle, USA", "company_size": "1000-5000", "salary": 140000},
+        {"titles": ["Product Manager", "Agile Coach"], "industry": "Management", "skills": "Scrum, Agile, Product Roadmaps", "location": "Los Angeles, USA", "company_size": "500-1000", "salary": 130000},
+        {"titles": ["Game Developer", "Unity Developer"], "industry": "Gaming", "skills": "Unity, C#, Unreal Engine", "location": "Tokyo, Japan", "company_size": "500-1000", "salary": 125000},
+        {"titles": ["Full Stack Engineer", "Backend Engineer"], "industry": "Tech", "skills": "Node.js, GraphQL, PostgreSQL", "location": "Paris, France", "company_size": "500-1000", "salary": 105000},
         {"titles": ["Front-end Developer", "React Developer"], "industry": "Tech", "skills": "React, TypeScript, Redux", "location": "Pune, India", "company_size": "1000-5000", "salary": 900000},
+        {"titles": ["SEO Specialist", "Digital Marketer"], "industry": "Marketing", "skills": "SEO, Google Ads, Social Media", "location": "Berlin, Germany", "company_size": "500-1000", "salary": 70000},
         {"titles": ["Java Developer", "Spring Boot Engineer"], "industry": "Tech", "skills": "Java, Spring Boot, Hibernate", "location": "Stockholm, Sweden", "company_size": "500-1000", "salary": 94000},
         {"titles": ["iOS Engineer", "Swift Developer"], "industry": "Tech", "skills": "Swift, Core Data, UI Kit", "location": "Bangkok, Thailand", "company_size": "500-1000", "salary": 80000},
-        {"titles": ["Android Engineer", "React Native Developer"], "industry": "Tech", "skills": "React Native, JavaScript, Firebase", "location": "Amsterdam, Netherlands", "company_size": "500-1000", "salary": 92000},
-        {"titles": ["Data Engineer", "ETL Developer"], "industry": "Tech", "skills": "ETL, Apache Kafka, AWS", "location": "Gurgaon, India", "company_size": "1000-5000", "salary": 1300000},
-        {"titles": ["DevOps Engineer", "Cloud Engineer"], "industry": "Tech", "skills": "AWS, Docker, Kubernetes", "location": "Bangalore, India", "company_size": "1000-5000", "salary": 1500000},
-        {"titles": ["AI Researcher", "Machine Learning Scientist"], "industry": "Tech", "skills": "Computer Vision, AI Research, PyTorch", "location": "Tokyo, Japan", "company_size": "500-1000", "salary": 110000},
+        {"titles": ["Machine Learning Researcher", "AI Scientist"], "industry": "Tech", "skills": "AI, Deep Learning, Computer Vision", "location": "Helsinki, Finland", "company_size": "200-500", "salary": 135000},
+        {"titles": ["Finance Analyst", "Investment Analyst"], "industry": "Finance", "skills": "Financial Modeling, Excel, SQL", "location": "Zurich, Switzerland", "company_size": "1000-5000", "salary": 140000},
     ]
 
 def run(skills):
     st.title("\U0001F50D Job Search & Filtering")
 
-    job_title = st.text_input("Search by Job Title (e.g., Software Engineer, Full Stack Developer, Front-end Engineer, iOS Developer)")
-    industry = st.text_input("Search by Industry (e.g., Tech, Finance, Design, etc.)")
-    location = st.text_input("Filter by Location (e.g., Bangalore, Berlin, Toronto, etc.)")
+    job_titles = sorted(set(title for job in jobs for title in job["titles"]))
+    industries = sorted(set(job["industry"] for job in jobs))
+    locations = sorted(set(job["location"] for job in jobs))
+
+    # Streamlit Selection Lists (Dropdowns)
+    # st.title("🔍 Job Search Filters")
+
+    job_title = st.selectbox("Select Job Title:", job_titles, index=0)
+    industry = st.selectbox("Select Industry:", industries, index=0)
+    location = st.selectbox("Select Location:", locations, index=0)
+
+    # Display Selected Filters
+    st.markdown(f"**Selected Job Title:** {job_title}")
+    st.markdown(f"**Selected Industry:** {industry}")
+    st.markdown(f"**Selected Location:** {location}")
     salary_range = st.slider("Salary Range", min_value=30000, max_value=1500000, value=(40000, 1000000))
 
     if "show_all" not in st.session_state:

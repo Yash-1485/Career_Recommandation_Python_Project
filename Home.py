@@ -4,24 +4,24 @@ from User import User
 import streamlit as st
 from streamlit_tags import st_tags
 from Courses import ds_course, web_course, android_course, ios_course, uiux_course, resume_videos, interview_videos
-import io, random
+import io, random, os
 import base64
 from fpdf import FPDF
 import JobSearch as JS
 
-def course_recommender(course_list):
-    st.subheader("**Courses & Certificates🎓 Recommendations**")
-    c = 0
-    rec_course = []
-    no_of_reco = st.slider('Choose Number of Course Recommendations:', 1, 10, 4)
-    random.shuffle(course_list)
-    for c_name, c_link in course_list:
-        c += 1
-        st.markdown(f"({c}) [{c_name}]({c_link})")
-        rec_course.append(c_name)
-        if c == no_of_reco:
-            break
-    return rec_course
+# def course_recommender(course_lists):
+#     st.subheader("**Courses & Certificates🎓 Recommendations**")
+#     c = 0
+#     rec_course = []
+#     no_of_reco = st.slider('Choose Number of Course Recommendations:', 1, 20, 4)
+#     for course in course_lists:
+#         for c_name, c_link in course:
+#             c += 1
+#             st.markdown(f"({c}) [{c_name}]({c_link})")
+#             rec_course.append(c_name)
+#             if c == no_of_reco:
+#                 break
+#     return rec_course
 
 def show_pdf(file_path):
     """Embed a PDF file in Streamlit."""
@@ -35,7 +35,7 @@ def create_download_link(val, filename):
     return f'<a href="data:application/octet-stream;base64,{b64.decode()}" download="{filename}.pdf">Download file</a>'
 
 # Function to create the resume PDF
-def create_resume(user:User):
+def create_report(user:User):
     pdf = FPDF()
     pdf.add_page()
     
@@ -93,6 +93,27 @@ def run():
             flag=True
         
         if(flag):
+            SAVE_FOLDER = "Report"
+            os.makedirs(SAVE_FOLDER, exist_ok=True)
+            if st.session_state.User:
+                pdf, path = create_report(user)  # Generate PDF
+                pdf_path = os.path.join(SAVE_FOLDER, f"{path}.pdf")
+                pdf.output(pdf_path)  # Ensure the file is written to disk
+                with open(pdf_path, "rb") as f:
+                    pdf_data = f.read()
+                b64_pdf = base64.b64encode(pdf_data).decode("utf-8")
+                download_js = f"""
+                    <script>
+                        var link = document.createElement('a');
+                        link.href = "data:application/pdf;base64,{b64_pdf}";
+                        link.download = "{path}.pdf";  // Use correct filename
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    </script>
+                """
+                st.markdown(download_js, unsafe_allow_html=True)
+            
             skills=user.skills
             name=user.fname+" "+user.lname
             st.header("**Career Analysis**")
@@ -104,22 +125,31 @@ def run():
             st.write('Gender: ' + user.gender)
 
             st.subheader("**Skills Recommendation💡**")
-            # keywords = st_tags(
-            #     label='### Skills that you have',
-            #     text='See our skills recommendation',
-            #     value=skills,  # Initial tags
-            #     maxtags=10,  # Max number of tags
-            # )
-            st.markdown(f'<h3>Skills that you have</h3>',unsafe_allow_html=True)
-            for skill in skills:
-                st.markdown(f'<h4>{skill}</h4>',unsafe_allow_html=True)
-
-            ##  recommendation
-            ds_keyword = ['tensorflow', 'keras', 'pytorch', 'machine learning', 'deep Learning', 'flask',
-                            'streamlit']
-            web_keyword = ['react', 'django', 'node jS', 'react js', 'php', 'laravel', 'magento', 'wordpress',
-                            'javascript', 'angular js', 'c#', 'flask','html','css']
-            android_keyword = ['android', 'android development', 'flutter', 'kotlin', 'xml', 'kivy']
+            st.markdown('''<style>
+                                .user_skill{
+                                    font-size: 25px;
+                                    color: red;
+                                    display: inline-block;
+                                    padding: 5px;
+                                    line-height: 2rem;
+                                    transition: all 0.2s;
+                                }
+                                .user_skill:hover{
+                                    box-shadow: 0 0 3px 3px #ddd;
+                                }
+                            </style>''',unsafe_allow_html=True)
+            user_skills=', '.join([f'<span class="user_skill">{skill}</span>' for skill in skills])
+            st.markdown(f'### Skills that you have: {'\n'+user_skills}',unsafe_allow_html=True)
+            
+            
+            # Skill Recommandations
+            if "recommended_skills" not in st.session_state:
+                st.session_state.recommended_skills = {}
+            # Skill Keywords
+            ds_keyword = ['tensorflow', 'keras', 'pytorch', 'machine learning', 'deep learning', 'flask', 'streamlit', 'python']
+            web_keyword = ['react', 'django', 'node js', 'react js', 'php', 'laravel', 'magento', 'wordpress',
+                        'javascript', 'angular js', 'c#', 'flask', 'html', 'css','javascript']
+            android_keyword = ['android', 'android development', 'flutter', 'kotlin', 'xml', 'kivy','java']
             ios_keyword = ['ios', 'ios development', 'swift', 'cocoa', 'cocoa touch', 'xcode']
             uiux_keyword = ['ux', 'adobe xd', 'figma', 'zeplin', 'balsamiq', 'ui', 'prototyping', 'wireframes',
                             'storyframes', 'adobe photoshop', 'photoshop', 'editing', 'adobe illustrator',
@@ -127,103 +157,116 @@ def run():
                             'premier pro', 'adobe indesign', 'indesign', 'wireframe', 'solid', 'grasp',
                             'user research', 'user experience']
 
-            recommended_skills = []
-            reco_field = ''
-            rec_course = ''
+            # Job Fields & Skills Mapping
+            job_fields = {
+                "Data Science": (ds_keyword, ['Data Visualization', 'Predictive Analysis', 'Statistical Modeling', 
+                                            'Data Mining', 'Clustering & Classification', 'Data Analytics', 
+                                            'Quantitative Analysis', 'Web Scraping', 'ML Algorithms', 'Keras', 
+                                            'Pytorch', 'Probability', 'Scikit-learn', 'Tensorflow', "Flask", 'Streamlit']),
+                "Web Development": (web_keyword, ['React', 'Django', 'Node.js', 'React.js', 'PHP', 'Laravel', 'Magento', 
+                                                'WordPress', 'JavaScript', 'Angular JS', 'C#', 'Flask', 'SDK']),
+                "Android Development": (android_keyword, ['Android', 'Android Development', 'Flutter', 'Kotlin', 'XML', 
+                                                        'Java', 'Kivy', 'GIT', 'SDK', 'SQLite']),
+                "IOS Development": (ios_keyword, ['IOS', 'IOS Development', 'Swift', 'Cocoa', 'Cocoa Touch', 'Xcode', 
+                                                'Objective-C', 'SQLite', 'Plist', 'StoreKit', "UI-Kit", 'AV Foundation', 
+                                                'Auto-Layout']),
+                "UI-UX Development": (uiux_keyword, ['UI', 'User Experience', 'Adobe XD', 'Figma', 'Zeplin', 'Balsamiq', 
+                                                    'Prototyping', 'Wireframes', 'Storyframes', 'Adobe Photoshop', 
+                                                    'Editing', 'Illustrator', 'After Effects', 'Premier Pro', 
+                                                    'Indesign', 'Wireframe', 'Solid', 'Grasp', 'User Research'])
+            }
+            # User Skills (Example)
+            user_skills = set([s.lower() for s in skills])
+            course_mapping = {
+                "Data Science": ds_course,
+                "Web Development": web_course,
+                "Android Development": android_course,
+                "IOS Development": ios_course,
+                "UI-UX Development": uiux_course
+            }
+            
+            # Initialize session state for storing recommended skills
+            if "recommended_skills" not in st.session_state:
+                st.session_state.recommended_skills = {}
 
-            ## Courses recommendation
-            for i in skills:
-                ## Data science recommendation
-                if i.lower() in ds_keyword:
-                    reco_field = 'Data Science'
-                    st.success("** Our analysis says you are looking for Data Science Jobs.**")
-                    recommended_skills = ['Data Visualization', 'Predictive Analysis', 'Statistical Modeling',
-                                            'Data Mining', 'Clustering & Classification', 'Data Analytics',
-                                            'Quantitative Analysis', 'Web Scraping', 'ML Algorithms', 'Keras',
-                                            'Pytorch', 'Probability', 'Scikit-learn', 'Tensorflow', "Flask",
-                                            'Streamlit']
-                    recommended_keywords = st_tags(label='### Recommended skills for you.',
-                                                    text='Recommended skills generated from System',
-                                                    value=recommended_skills, key='2')
-                    st.markdown(
-                        '''<h4 style='text-align: left; color: #1ed760;'>Adding this skills to resume will boost🚀 the chances of getting a Job💼</h4>''',
-                        unsafe_allow_html=True)
-                    rec_course = course_recommender(ds_course)
-                    break
+            def recommend_jobs():
+                recommended_jobs = []
+                valid_fields = {}
 
-                ## Web development recommendation
-                elif i.lower() in web_keyword:
-                    reco_field = 'Web Development'
-                    st.success("** Our analysis says you are looking for Web Development Jobs **")
-                    recommended_skills = ['React', 'Django', 'Node JS', 'React JS', 'php', 'laravel', 'Magento',
-                                            'wordpress', 'Javascript', 'Angular JS', 'c#', 'Flask', 'SDK']
-                    recommended_keywords = st_tags(label='### Recommended skills for you.',
-                                                    text='Recommended skills generated from System',
-                                                    value=recommended_skills, key='3')
-                    st.markdown(
-                        '''<h4 style='text-align: left; color: #1ed760;'>Adding this skills to resume will boost🚀 the chances of getting a Job💼</h4>''',
-                        unsafe_allow_html=True)
-                    rec_course = course_recommender(web_course)
-                    break
+                # Find relevant fields where the user has matching skills
+                for field, (keywords, skills_list) in job_fields.items():
+                    print(keywords)
+                    if any(skill in keywords for skill in user_skills):  # User must have at least one matching skill
+                        valid_fields[field] = skills_list
 
-                ## Android App Development
-                elif i.lower() in android_keyword:
-                    reco_field = 'Android Development'
-                    st.success("** Our analysis says you are looking for Android App Development Jobs **")
-                    recommended_skills = ['Android', 'Android development', 'Flutter', 'Kotlin', 'XML', 'Java',
-                                            'Kivy', 'GIT', 'SDK', 'SQLite']
-                    recommended_keywords = st_tags(label='### Recommended skills for you.',
-                                                    text='Recommended skills generated from System',
-                                                    value=recommended_skills, key='4')
-                    st.markdown(
-                        '''<h4 style='text-align: left; color: #1ed760;'>Adding this skills to resume will boost🚀 the chances of getting a Job💼</h4>''',
-                        unsafe_allow_html=True)
-                    rec_course = course_recommender(android_course)
-                    break
+                # If relevant fields are found, proceed
+                if valid_fields:
+                    for field, skills_list in valid_fields.items():
+                        recommended_jobs.append(field)
 
-                ## IOS App Development
-                elif i.lower() in ios_keyword:
-                    reco_field = 'IOS Development'
-                    st.success("** Our analysis says you are looking for IOS App Development Jobs **")
-                    recommended_skills = ['IOS', 'IOS Development', 'Swift', 'Cocoa', 'Cocoa Touch', 'Xcode',
-                                            'Objective-C', 'SQLite', 'Plist', 'StoreKit', "UI-Kit", 'AV Foundation',
-                                            'Auto-Layout']
-                    recommended_keywords = st_tags(label='### Recommended skills for you.',
-                                                    text='Recommended skills generated from System',
-                                                    value=recommended_skills, key='5')
-                    st.markdown(
-                        '''<h4 style='text-align: left; color: #1ed760;'>Adding this skills to resume will boost🚀 the chances of getting a Job💼</h4>''',
-                        unsafe_allow_html=True)
-                    rec_course = course_recommender(ios_course)
-                    break
+                        # Determine missing skills for this field
+                        missing_skills = [skill for skill in skills_list if skill.lower() not in user_skills]
 
-                ## Ui-UX Recommendation
-                elif i.lower() in uiux_keyword:
-                    reco_field = 'UI-UX Development'
-                    st.success("** Our analysis says you are looking for UI-UX Development Jobs **")
-                    recommended_skills = ['UI', 'User Experience', 'Adobe XD', 'Figma', 'Zeplin', 'Balsamiq',
-                                            'Prototyping', 'Wireframes', 'Storyframes', 'Adobe Photoshop', 'Editing',
-                                            'Illustrator', 'After Effects', 'Premier Pro', 'Indesign', 'Wireframe',
-                                            'Solid', 'Grasp', 'User Research']
-                    recommended_keywords = st_tags(label='### Recommended skills for you.',
-                                                    text='Recommended skills generated from System',
-                                                    value=recommended_skills, key='6')
-                    st.markdown(
-                        '''<h4 style='text-align: left; color: #1ed760;'>Adding this skills to resume will boost🚀 the chances of getting a Job💼</h4>''',
-                        unsafe_allow_html=True)
-                    rec_course = course_recommender(uiux_course)
-                    break
+                        # Store in session state
+                        st.session_state.recommended_skills[field] = missing_skills
+
+                        # Display Job Recommendation
+                        st.success(f"**Our analysis says you are looking for {field} Jobs.**")
+
+                        # Display Recommended Skills (If any missing)
+                        if missing_skills:
+                            st.markdown(
+                                '''<style>
+                                    .skill {
+                                        font-size: 20px;
+                                        font-weight: bold;
+                                        color: green;
+                                    }
+                                </style>''', 
+                                unsafe_allow_html=True
+                            )
+                            formatted_skills = ', '.join([f'<span class="skill">`{skill}`</span>' for skill in missing_skills])
+                            st.markdown(f"### 🔹 Recommended Skills for **{field}**: {'\n'+formatted_skills}", unsafe_allow_html=True)
+                        else:
+                            st.success(f"✅ You already have all the required skills for {field}! 🎉")
+
+                        # Display Job Boost Message
+                        st.markdown(
+                            '''<h4 style='text-align: left; color: #1ed760;'>
+                            🚀 Adding these skills to your resume will boost your chances of getting a Job 💼</h4>''',
+                            unsafe_allow_html=True
+                        )
+
+                        # Recommend Courses (Slider with Unique Key)
+                        no_of_reco = st.slider(f'Choose Number of Course Recommendations for {field}:', 
+                                            1, 10, 4, key=f"slider_{field}")
+
+                        # Call Course Recommendation
+                        course_recommender(course_mapping[field], field, no_of_reco)
+                else:
+                    st.warning("No job recommendations found. Try adding more skills.")
+                    
+            # Course Recommendation Function
+            def course_recommender(course_list, field_name,records):
+                st.subheader(f"**Courses & Certificates 🎓 Recommendations for {field_name}**")
+                no_of_reco = records
+                
+                for idx, (course_name, course_link) in enumerate(course_list[:no_of_reco], start=1):
+                    st.markdown(f"({idx}) [{course_name}]({course_link})")
+            # Run Recommendation
+            recommend_jobs()
+
 
             try:                
-                export_as_pdf = st.button("Export Report")                
-
+                export_as_pdf = st.button("Export Report")                                
+                    
                 if export_as_pdf:
-                    pdf,path=create_resume(user)
+                    pdf,path=create_report(user)
                     # Creating download link
                     pdf_data = pdf.output(dest="S").encode("latin-1")
                     html = create_download_link(pdf_data,path)
                     st.markdown(html, unsafe_allow_html=True)
-                
+
                 # Predefined path to the PDF file
                 pdf_path = f"Report/{user.fname}.pdf"
                 # Initialize the session state for toggling
