@@ -34,6 +34,7 @@ def update_user_data(field, new_value, user):
         st.rerun()
 
 def run():
+    st.title("CareerMap")
     user: User = st.session_state["User"]
     st.markdown(
         """

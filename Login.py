@@ -7,6 +7,7 @@ from User import User
 count = 0  # Incorrect login attempt counter
 
 def run():
+    st.title("CareerMap")
     st.title("Login Page")
     email = st.text_input("Email", placeholder="Enter your email")
     password = st.text_input("Password", type="password", placeholder="Enter your password")

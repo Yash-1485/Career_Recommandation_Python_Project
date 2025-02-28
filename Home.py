@@ -111,7 +111,8 @@ def create_report(user: User):
 
 def run():
     try:
-        st.title("Welcome to the Career Recommendation System")
+        st.title("Welcome to the CareerMap")
+        st.subheader("A Career Recommendation System")
         st.write("Explore career opportunities tailored to your skills and interests.")
         
         flag=False
